@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef, useContext ,useEffect} from 'react';
 import classes from './AuthForm.module.css';
 import AuthContext from '../../store/auth-context';
 // import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
@@ -9,7 +9,28 @@ const AuthForm = () => {
   const authCtx=useContext(AuthContext);
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
-  // const history=useHistory();
+// const history=useHistory();
+const [lastActiveTime, setLastActiveTime] = useState(new Date());
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      authCtx.logout(); // Implement the logout function in your AuthContext
+      alert('You have been logged out due to inactivity.');
+    }, 5 * 60 * 1000); // 5 minutes in milliseconds
+    // Clear the timeout if the user interacts
+    const activityListener = () => {
+      setLastActiveTime(new Date());
+      clearTimeout(timeout);
+    };
+    window.addEventListener('mousemove', activityListener);
+    window.addEventListener('keydown', activityListener);
+
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('mousemove', activityListener);
+      window.removeEventListener('keydown', activityListener);
+    };
+  }, [authCtx]);
 
 
   const submitHandler = (event) => {
@@ -17,6 +38,10 @@ const AuthForm = () => {
     console.log("yes you clicked submit");
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
+    
+
+
+    
     setIsLoading(true);
     let url;
 
